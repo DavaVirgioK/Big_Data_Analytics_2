@@ -1,0 +1,93 @@
+session server;
+
+/* Start checking for existence of each input table */
+exists0=doesTableExist("CASUSER(dava.virgio@student.umn.ac.id)", "ORDER_PRODUCTS_PRIOR_NODUP");
+if exists0 == 0 then do;
+  print "Table "||"CASUSER(dava.virgio@student.umn.ac.id)"||"."||"ORDER_PRODUCTS_PRIOR_NODUP" || " does not exist.";
+  print "UserErrorCode: 100";
+  exit 1;
+end;
+print "Input table: "||"CASUSER(dava.virgio@student.umn.ac.id)"||"."||"ORDER_PRODUCTS_PRIOR_NODUP"||" found.";
+/* End checking for existence of each input table */
+
+
+  _dp_inputTable="ORDER_PRODUCTS_PRIOR_NODUP";
+  _dp_inputCaslib="CASUSER(dava.virgio@student.umn.ac.id)";
+
+  _dp_outputTable="825c60d1-9811-4af1-8f51-0a758db5fa89";
+  _dp_outputCaslib="CASUSER(dava.virgio@student.umn.ac.id)";
+
+    simple.groupByInfo /
+    table ={ name="ORDER_PRODUCTS_PRIOR_NODUP" caslib="CASUSER(dava.virgio@student.umn.ac.id)"}
+    casout = {replace=1, name="825c60d1-9811-4af1-8f51-0a758db5fa89" caslib="CASUSER(dava.virgio@student.umn.ac.id)"}
+    includeMissing=TRUE generatedColumns={"NONE"};
+  _dp_inputTable="825c60d1-9811-4af1-8f51-0a758db5fa89";
+  _dp_inputCaslib="CASUSER(dava.virgio@student.umn.ac.id)";
+
+  _dp_outputTable="13bc0e37-9f0d-45b7-8728-85c0ea1535b5-ORDERPRODUCTSPRIORNODUP1-1";
+  _dp_outputCaslib="CASUSER(dava.virgio@student.umn.ac.id)";
+
+dataStep.runCode result=r status=rc / code='/* BEGIN data step with the output table                                           data */
+data "13bc0e37-9f0d-45b7-8728-85c0ea1535b5-ORDERPRODUCTSPRIORNODUP1-1" (caslib="CASUSER(dava.virgio@student.umn.ac.id)" promote="no");
+
+    length
+       "reordered_STND"n varchar(256)
+    ;
+
+    /* Set the input                                                                set */
+    set "825c60d1-9811-4af1-8f51-0a758db5fa89" (caslib="CASUSER(dava.virgio@student.umn.ac.id)"  );
+
+    /* BEGIN statement 192d33e0_da9c_4744_8ec9_c78725f2bd49               dqstandardize */
+    "reordered_STND"n = dqstandardize ("reordered"n, "Non-Alphanumeric Removal", "ENUSA");
+    /* END statement 192d33e0_da9c_4744_8ec9_c78725f2bd49                 dqstandardize */
+
+/* END data step                                                                    run */
+run;
+';
+if rc.statusCode != 0 then do;
+  print "Error executing datastep";
+  exit 2;
+end;
+
+dropTableIfExists("CASUSER(dava.virgio@student.umn.ac.id)", "825c60d1-9811-4af1-8f51-0a758db5fa89");
+
+function doesTableExist(casLib, casTable);
+  table.tableExists result=r status=rc / caslib=casLib table=casTable;
+  tableExists = dictionary(r, "exists");
+  return tableExists;
+end func;
+
+function dropTableIfExists(casLib,casTable);
+  tableExists = doesTableExist(casLib, casTable);
+  if tableExists != 0 then do;
+    print "Dropping table: "||casLib||"."||casTable;
+    table.dropTable result=r status=rc/ caslib=casLib table=casTable quiet=0;
+    if rc.statusCode != 0 then do;
+      exit();
+    end;
+  end;
+end func;
+
+/* Return list of columns in a table */
+function columnList(casLib, casTable);
+  table.columnInfo result=collist / table={caslib=casLib,name=casTable};
+  ndimen=dim(collist['columninfo']);
+  featurelist={};
+  do i =  1 to ndimen;
+    featurelist[i]=upcase(collist['columninfo'][i][1]);
+  end;
+  return featurelist;
+end func;
+NOTE: Active Session now server.
+Input table: CASUSER(dava.virgio@student.umn.ac.id).ORDER_PRODUCTS_PRIOR_NODUP found.
+CAS Library         Name                    Number of Rows   Number of Columns  
+CASUSER(dava.virgio@student.umn.ac.id)  825c60d1-9811-4af1-8f51-0a758db5fa89               49677                   4  
+
+
+NOTE: Numeric values have been converted to character values at the places given by: (Line):(Column).
+      2:93
+NOTE: Duplicate messages output by DATA step:
+NOTE: Numeric values have been converted to character values at the places given by: (Line):(Column).  (occurred 36 times)
+      2:93  (occurred 36 times)
+Dropping table: CASUSER(dava.virgio@student.umn.ac.id).825c60d1-9811-4af1-8f51-0a758db5fa89
+NOTE: Cloud Analytic Services dropped table 825c60d1-9811-4af1-8f51-0a758db5fa89 from caslib CASUSER(dava.virgio@student.umn.ac.id).
